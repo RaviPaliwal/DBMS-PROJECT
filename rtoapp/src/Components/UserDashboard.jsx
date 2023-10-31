@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
-import { ThemeProvider, createTheme, Grid, Container } from "@mui/material";
+import {
+  ThemeProvider,
+  createTheme,
+  Grid,
+  Container,
+  Typography,
+} from "@mui/material";
 import VehicleTable from "./AllVehicleTable";
 import { BASE_URL } from "../config";
 import PucTable from "./PucTable";
 import InsuranceTable from "./InsuranceTable";
+import OwnershipTransferForm from "./OwnershipTransferForm";
+import OTRTable from "./OTRTable";
+
 const ctheme = createTheme({
   palette: {
     primary: {
@@ -13,15 +22,13 @@ const ctheme = createTheme({
   },
 });
 
-
-
-
 const UserDashboard = () => {
   const userDataString = JSON.parse(sessionStorage.getItem("user"));
-  console.log(userDataString)
+  console.log(userDataString);
   const [info, setInfo] = useState([]);
   const [pucinfo, setPucInfo] = useState([]);
   const [insuranceinfo, setInsInfo] = useState([]);
+  const [data, setOtrInfo] = useState([]);
 
   useEffect(() => {
     const getallinfo = async () => {
@@ -60,16 +67,36 @@ const UserDashboard = () => {
         console.log(e.message);
       }
     };
+    const getOTrInfo = async () => {
+      let headersList = {
+        Accept: "*/*",
+      };
+
+      let response = await fetch(
+        `${BASE_URL}/api/ownership-transfer-reqs/${userDataString.owner_id}`,
+        {
+          method: "GET",
+          headers: headersList,
+        }
+      );
+
+      let data = await response.json();
+      console.log(data)
+      setOtrInfo(data);
+    };
+    getOTrInfo();
     getallinfo();
     getpucinfo();
     getinsinfo();
   }, []);
 
+ 
+
   return (
     <>
       <ThemeProvider theme={ctheme}>
         <Navbar loggedin={true} />
-        <Container style={{display:'flex',flexDirection:"column"}}>
+        <Container style={{ display: "flex", flexDirection: "column" }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={12} md={12} lg={6}>
               <VehicleTable info={info} />
@@ -80,6 +107,17 @@ const UserDashboard = () => {
             <Grid item xs={12} sm={12} md={12} lg={6}>
               <InsuranceTable info={insuranceinfo} />
             </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+              <OTRTable
+                data={data}
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} md={12} lg={6}>
+              <Typography variant="h6" style={{ textAlign: "center" }}>
+                Request OwnershipTransfer
+              </Typography>
+              <OwnershipTransferForm user={userDataString} />
+            </Grid>
           </Grid>
         </Container>
       </ThemeProvider>
@@ -87,5 +125,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard
-  
+export default UserDashboard;

@@ -114,7 +114,7 @@ router.get("/getinsuranceinfo/:email", (req, res) => {
 
 router.post("/ownership-transfer", (req, res) => {
   const { req_date, reason, vehicle_id, current_owner_id, new_owner_id } = req.body;
-
+  console.log(req.body)
   // Insert the ownership transfer request into the OTR table
   const insertTransferRequestQuery = "INSERT INTO OTR (req_date, reason, status, vehicle_id, current_owner_id, new_owner_id) VALUES (?, ?, ?, ?, ?, ?)";
   connection.query(
@@ -126,7 +126,23 @@ router.post("/ownership-transfer", (req, res) => {
         res.status(500).json({ success: false, message: "Error creating ownership transfer request" });
         return;
       }
-      res.status(201).json({ success: true, message: "Ownership transfer request created successfully" });
+      res.status(200).json({ success: true, message: "Ownership transfer request created successfully" });
+    }
+  );
+});
+
+router.get("/ownership-transfer-reqs/:owner_id", (req, res) => {
+  const {owner_id} = req.params;
+  const Query = `select * from OTR where current_owner_id =${owner_id}`;
+  connection.query(
+    Query,
+    (err, result) => {
+      if (err) {
+        console.error("Error getting ownership transfer request:", err);
+        res.status(500).json({ success: false, message: "Error creating ownership transfer request" });
+        return ;
+      }
+      res.status(200).json(result);
     }
   );
 });
